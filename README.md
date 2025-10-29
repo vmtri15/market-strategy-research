@@ -44,3 +44,4 @@ make backtest
 
 # Run dashboard
 make app
+# market-prediction-system
