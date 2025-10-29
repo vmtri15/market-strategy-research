@@ -1,0 +1,21 @@
+data:
+  symbols: ["AAPL", "MSFT", "SPY"]
+  start_date: "2018-01-01"
+  interval: "1d"
+  database: "data/market_data.db"
+
+features:
+  prediction_horizon: 5
+  indicators:
+    - rsi
+    - macd
+    - ema_20
+    - ema_50
+
+model:
+  type: "random_forest"
+  save_path: "models/model.pkl"
+
+backtest:
+  initial_balance: 10000
+  transaction_cost: 0.001
