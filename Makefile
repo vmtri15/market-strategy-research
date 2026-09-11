@@ -15,3 +15,18 @@ backtest:
 
 app:
 	streamlit run app/dashboard.py
+
+research:
+	python -m src.models.research
+
+test:
+	python -m unittest discover -s tests -v
+
+report:
+	python -m src.models.business_report
+
+paper:
+	python -m src.paper.engine run
+
+paper-check:
+	python -m src.paper.engine check

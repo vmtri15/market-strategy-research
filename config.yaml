@@ -19,3 +19,4 @@ model:
 backtest:
   initial_balance: 10000
   transaction_cost: 0.001
+  slippage: 0.0005

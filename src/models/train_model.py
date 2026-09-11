@@ -1,39 +1,40 @@
+"""Chronological holdout with labels purged at the cutoff."""
+import json
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import joblib
 import yaml
 
-# Load config
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
+FEATURES = ['rsi', 'macd', 'macd_signal', 'ema_20', 'ema_50']
 
-MODEL_PATH = config["model"]["save_path"]
 
-def load_features():
-    return pd.read_csv("data/processed/features.csv")
+def split_data(df, test_fraction=0.2):
+    dates = sorted(df['Date'].unique())
+    cutoff = pd.Timestamp(dates[int(len(dates) * (1 - test_fraction))])
+    train = df[(df.Date < cutoff) & (df.target_date < cutoff)].copy()
+    test = df[(df.Date >= cutoff) & df.future_return.notna()].copy()
+    if train.empty or test.empty:
+        raise ValueError('Insufficient data for chronological train/test split')
+    return train, test, cutoff
+
 
 def train_model():
-    df = load_features()
+    with open('config.yaml') as f:
+        config = yaml.safe_load(f)
+    df = pd.read_csv('data/processed/features.csv', parse_dates=['Date', 'target_date'])
+    train, test, cutoff = split_data(df)
+    model = RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1)
+    model.fit(train[FEATURES], train.signal)
+    report = classification_report(test.signal, model.predict(test[FEATURES]), output_dict=True, zero_division=0)
+    bundle = {'model': model, 'features': FEATURES, 'test_start': cutoff.isoformat(),
+              'train_rows': len(train), 'test_rows': len(test)}
+    joblib.dump(bundle, config['model']['save_path'])
+    with open('models/evaluation.json', 'w') as f:
+        json.dump({k: v for k, v in bundle.items() if k != 'model'} | {'classification': report}, f, indent=2)
+    print(f'Trained on {len(train):,} rows; tested on {len(test):,} rows from {cutoff.date()}')
+    print(f'Holdout accuracy: {report["accuracy"]:.3f}')
 
-    features = ["rsi", "macd", "macd_signal", "ema_20", "ema_50"]
-    X = df[features]
-    y = df["signal"]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, shuffle=False
-    )
-
-    model = RandomForestClassifier(n_estimators=200, random_state=42)
-    model.fit(X_train, y_train)
-
-    preds = model.predict(X_test)
-    print("✅ Model Evaluation:")
-    print(classification_report(y_test, preds))
-
-    joblib.dump(model, MODEL_PATH)
-    print(f"✅ Model saved to {MODEL_PATH}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     train_model()

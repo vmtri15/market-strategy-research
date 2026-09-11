@@ -1,0 +1,19 @@
+{
+  "start": "2024-04-19",
+  "end": "2025-10-29",
+  "strategy": {
+    "total_return": 0.262509316038654,
+    "annualized_return": 0.1648368886424103,
+    "max_drawdown": -0.19331283718996717,
+    "sharpe_ratio": 1.008743478436794
+  },
+  "benchmark": {
+    "total_return": 0.4661016821716091,
+    "annualized_return": 0.2845943628049903,
+    "max_drawdown": -0.2438461788132541,
+    "sharpe_ratio": 1.3122489833745756
+  },
+  "trade_count": 37,
+  "transaction_cost": 0.001,
+  "slippage": 0.0005
+}

@@ -1,51 +1,35 @@
-import yfinance as yf
+"""Fetch all symbols before replacing the saved price table."""
+import sqlite3
+from pathlib import Path
 import pandas as pd
-from sqlalchemy import create_engine
+import yfinance as yf
 import yaml
-import os
 
-# Load config
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
-
-DB_PATH = config["data"]["database"]
-SYMBOLS = config["data"]["symbols"]
-INTERVAL = config["data"]["interval"]
-START_DATE = config["data"]["start_date"]
-
-# Create database engine
-engine = create_engine(f"sqlite:///{DB_PATH}")
-
-def fetch_and_store(symbol):
-    print(f"Fetching data for {symbol}...")
-    df = yf.download(symbol, start=START_DATE, interval=INTERVAL)
-    
-    # Fix MultiIndex columns
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [col[0] for col in df.columns]
-
-    df = df.rename(columns={
-        "Open": "open",
-        "High": "high",
-        "Low": "low",
-        "Close": "close",
-        "Adj Close": "adj_close",
-        "Volume": "volume"
-    })
-
-    df.reset_index(inplace=True)
-    df["symbol"] = symbol
-
-    df.to_sql("price_data", engine, if_exists="append", index=False)
-    print(f"Stored {symbol} data in database.")
 
 def main():
-    # Delete database file to avoid conflicts
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    with open('config.yaml') as f:
+        config = yaml.safe_load(f)['data']
+    parts = []
+    for symbol in config['symbols']:
+        df = yf.download(symbol, start=config['start_date'], interval=config['interval'], auto_adjust=True)
+        if df.empty:
+            raise ValueError(f'No data for {symbol}; existing database retained')
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        df = df.rename(columns=str.lower).reset_index()
+        df['symbol'] = symbol
+        parts.append(df[['Date', 'open', 'high', 'low', 'close', 'volume', 'symbol']])
+    prices = pd.concat(parts, ignore_index=True).drop_duplicates(['symbol', 'Date'])
+    if prices[['open', 'high', 'low', 'close', 'volume']].isna().any().any():
+        raise ValueError('Missing price data; existing database retained')
+    Path(config['database']).parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(config['database']) as conn:
+        prices.to_sql('price_data_staging', conn, if_exists='replace', index=False)
+        conn.execute('DROP TABLE IF EXISTS price_data')
+        conn.execute('ALTER TABLE price_data_staging RENAME TO price_data')
+        conn.execute('CREATE UNIQUE INDEX price_symbol_date ON price_data(symbol, Date)')
+    print(f'Stored {len(prices):,} unique price records')
 
-    for symbol in SYMBOLS:
-        fetch_and_store(symbol)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
