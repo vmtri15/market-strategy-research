@@ -51,7 +51,7 @@ The strategy produced a smaller maximum drawdown, but did **not** outperform buy
 
 - **6 annual walk-forward periods:** 2021–2026; 2026 is partial.
 - **1,000 sensitivity scenarios:** combinations of confidence thresholds, transaction fees, and slippage on 2021–2023 predictions.
-- **25 automated tests:** a dashboard smoke test over all five pages, feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
+- **27 automated tests:** a dashboard smoke test over all five pages, feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
 
 The 1,000 scenarios are sensitivity tests on the same historical predictions. They are not 1,000 independent models, and choosing the best historical scenario would not establish future performance.
 
