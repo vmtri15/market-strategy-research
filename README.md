@@ -35,23 +35,23 @@ The Streamlit app includes five pages:
 
 ## Historical findings
 
-The saved default walk-forward comparison covers January 2024 through October 2025. It uses $10,000 of starting capital, equal initial allocation among the three securities, and no scenario selected for its later-period return.
+The saved default walk-forward comparison covers January 2024 through October 2026. It uses $10,000 of starting capital, equal initial allocation among the three securities, and no scenario selected for its later-period return.
 
 | Metric | Strategy | Buy and hold |
 | --- | ---: | ---: |
-| Ending account value | $13,064 | $14,794 |
-| Total return | 30.6% | 47.9% |
-| Annualized return | 15.8% | 24.0% |
-| Maximum drawdown | -21.3% | -23.9% |
-| Sharpe ratio | 1.00 | 1.20 |
+| Ending account value | $13,887 | $16,750 |
+| Total return | 38.9% | 67.5% |
+| Annualized return | 12.4% | 20.2% |
+| Maximum drawdown | -19.1% | -23.9% |
+| Sharpe ratio | 0.90 | 1.10 |
 
-The strategy produced a smaller maximum drawdown, but did **not** outperform buy-and-hold on return. It exceeded buy-and-hold return in 1 of 5 annual walk-forward periods and had a smaller drawdown in all 5. These results are descriptive historical observations, not a forecast.
+The strategy produced a smaller maximum drawdown, but did **not** outperform buy-and-hold on return. It exceeded buy-and-hold return in 1 of 6 annual walk-forward periods and had a smaller drawdown in all 6. These results are descriptive historical observations, not a forecast.
 
 ## Validation and scenario analysis
 
-- **5 annual walk-forward periods:** 2021–2025; 2025 is partial.
+- **6 annual walk-forward periods:** 2021–2026; 2026 is partial.
 - **1,000 sensitivity scenarios:** combinations of confidence thresholds, transaction fees, and slippage on 2021–2023 predictions.
-- **24 automated tests:** a dashboard smoke test over all five pages, feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
+- **25 automated tests:** a dashboard smoke test over all five pages, feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
 
 The 1,000 scenarios are sensitivity tests on the same historical predictions. They are not 1,000 independent models, and choosing the best historical scenario would not establish future performance.
 
@@ -121,7 +121,7 @@ tests/               Automated validation
 
 ## Limitations
 
-- Historical prices end in October 2025; paper-trading results begin only after account creation.
+- Historical prices end in October 2026 (refresh with `make all`); paper-trading results begin only after account creation.
 - The model confidence score is not calibrated.
 - Simulations assume fractional shares, fixed fees/slippage, zero interest on cash, no taxes, and no market impact.
 - Corporate actions pause the paper account for review; automated dividend and split accounting is not implemented.
