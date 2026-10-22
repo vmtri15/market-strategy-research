@@ -18,7 +18,7 @@ The Streamlit app includes five pages:
 
 | Page | Purpose |
 | --- | --- |
-| **Overview** | Portfolio growth, drawdowns, annual comparisons, risk metrics, and decision criteria. |
+| **Overview** | Portfolio growth, drawdowns, annual comparisons, risk metrics, and decision criteria (vs. buy-and-hold, a stock/cash mix, and a volatility-target benchmark). |
 | **Stock explorer** | Historical price and Buy/Hold/Sell signal history for each security. |
 | **Scenario lab** | Runs and saves custom historical simulations with selected securities, dates, costs, capital, and confidence threshold. |
 | **Saved comparisons** | Compares the return-risk tradeoffs of saved scenarios. |
@@ -51,7 +51,7 @@ The strategy produced a smaller maximum drawdown, but did **not** outperform buy
 
 - **5 annual walk-forward periods:** 2021–2025; 2025 is partial.
 - **1,000 sensitivity scenarios:** combinations of confidence thresholds, transaction fees, and slippage on 2021–2023 predictions.
-- **20 automated tests:** feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
+- **24 automated tests:** a dashboard smoke test over all five pages, feature isolation, label purging, execution timing, trading costs, risk metrics, trade reconciliation, paper-account limits, duplicate prevention, and pause behavior.
 
 The 1,000 scenarios are sensitivity tests on the same historical predictions. They are not 1,000 independent models, and choosing the best historical scenario would not establish future performance.
 
@@ -68,6 +68,9 @@ pip install -r requirements.txt
 make run-features
 make train
 make research
+
+# Or rebuild everything, including a fresh yfinance download
+make all
 
 # Start the dashboard
 make app
@@ -98,7 +101,7 @@ The paper account uses a frozen copy of the trained model. Signals are created a
 ## Project structure
 
 ```text
-app/                 Streamlit dashboard and paper-trading page
+app/                 Streamlit dashboard, shared panels (components.py), paper-trading page
 data/                SQLite price data and generated research artifacts
 reports/             Generated business report and CSV summaries
 src/data/            Market-data ingestion
@@ -106,6 +109,14 @@ src/features/        Technical-indicator and target generation
 src/models/          Training, backtesting, walk-forward research, and metrics
 src/paper/           Virtual paper-trading engine
 tests/               Automated validation
+```
+
+## Daily paper trading
+
+`make paper` processes the latest completed session (run it at least an hour after market close). To run it on weekdays at 5:30pm local time, add this to `crontab -e`:
+
+```text
+30 17 * * 1-5 cd /path/to/market-prediction-system && make paper
 ```
 
 ## Limitations
