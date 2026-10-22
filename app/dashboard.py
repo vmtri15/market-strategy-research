@@ -94,7 +94,7 @@ if page == 'Overview':
             st.subheader('What to take away')
             st.write(f"**{(annual['Return difference (pp)'] > 0).sum()} of {len(annual)} periods** beat buy-and-hold on return.")
             st.write(f"**{(annual['Drawdown reduction (pp)'] > 0).sum()} of {len(annual)} periods** had smaller drawdowns.")
-            st.caption('Annual portfolios restart in cash. 2025 is partial. These comparisons do not establish a future advantage.')
+            st.caption('Annual portfolios restart in cash. The latest year is partial. These comparisons do not establish a future advantage.')
     with report:
         st.markdown(text)
         st.download_button('Download report', text, 'business_report.md')

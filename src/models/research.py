@@ -92,6 +92,19 @@ def save_run(df, confidence=0., fee=.001, slippage=.0005, capital=10000., scope=
     return run_id, curve, stats
 
 
+def clear_generated_runs(db=DB):
+    """Drop runs created by main() so a re-run on new data leaves one set; custom scenario runs stay."""
+    if not Path(db).exists():
+        return
+    with sqlite3.connect(db) as conn:
+        if not conn.execute("SELECT name FROM sqlite_master WHERE name='runs'").fetchone():
+            return
+        generated = "json_extract(parameters,'$.scope') IN ('development','later_period_default') OR json_extract(parameters,'$.scope') LIKE 'annual_default_%'"
+        if conn.execute("SELECT name FROM sqlite_master WHERE name='curves'").fetchone():
+            conn.execute(f'DELETE FROM curves WHERE run_id IN (SELECT run_id FROM runs WHERE {generated})')
+        conn.execute(f'DELETE FROM runs WHERE {generated}')
+
+
 def list_runs(db=DB):
     if not Path(db).exists():
         return pd.DataFrame()
@@ -107,6 +120,7 @@ def main():
     parser.add_argument('--reuse-predictions', action='store_true')
     args = parser.parse_args()
     df = pd.read_csv(PREDICTIONS, parse_dates=['Date']) if args.reuse_predictions else walk_forward()
+    clear_generated_runs()
     development = df[df.Date < '2024-01-01']
     # Fixed grid on development years only; later years are not used for ranking.
     grid = itertools.product([0., .4, .5, .6, .7], np.linspace(0, .003, 10), np.linspace(0, .002, 20))
