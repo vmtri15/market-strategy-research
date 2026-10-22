@@ -1,6 +1,7 @@
 import unittest
+import numpy as np
 import pandas as pd
-from src.models.decision_support import stock_cash_benchmark,criteria_table
+from src.models.decision_support import stock_cash_benchmark,criteria_table,vol_target_benchmark
 
 
 class DecisionSupportTests(unittest.TestCase):
@@ -27,3 +28,26 @@ class DecisionSupportTests(unittest.TestCase):
         self.assertEqual(criteria_table(curves,100,0,.15).iloc[0].Overall,'Unavailable')
         with self.assertRaises(ValueError):
             stock_cash_benchmark(curves.Cash,100,1.1)
+
+
+class VolTargetTests(unittest.TestCase):
+    def setUp(self):
+        self.index=pd.bdate_range('2020-01-01',periods=120)
+
+    def test_calm_market_is_fully_invested_and_starts_in_cash(self):
+        calm=pd.Series(100*1.0002**np.arange(120),index=self.index)  # zero volatility
+        curve=vol_target_benchmark(calm,1000,.15)
+        self.assertEqual(curve.iloc[0],1000)
+        self.assertEqual(curve.iloc[:20].nunique(),1)             # cash until the window fills
+        self.assertGreater(curve.iloc[-1],1000)
+
+    def test_turbulent_market_reduces_exposure(self):
+        rng=pd.Series(np.where(np.arange(120)%2,1.05,.95)).cumprod()*100
+        wild=pd.Series(rng.values,index=self.index)
+        stock=wild/wild.iloc[0]*1000
+        curve=vol_target_benchmark(stock,1000,.10)
+        self.assertLess(curve.pct_change().abs().max(),stock.pct_change().abs().max())
+
+    def test_invalid_inputs(self):
+        with self.assertRaises(ValueError):
+            vol_target_benchmark(pd.Series([1.,2.]),100,0)
