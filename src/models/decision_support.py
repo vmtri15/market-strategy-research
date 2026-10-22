@@ -1,5 +1,6 @@
 """Historical criteria checks and a fixed initial stock/cash benchmark."""
 import math
+import numpy as np
 import pandas as pd
 from src.models.backtest import metrics
 
@@ -10,6 +11,21 @@ def stock_cash_benchmark(full_stock, capital, stock_weight):
     # Entry costs scale with the invested sleeve; reserved cash earns zero.
     # There is no rebalancing, so stock exposure drifts after the initial purchase.
     return full_stock * stock_weight + capital * (1 - stock_weight)
+
+
+def vol_target_benchmark(full_stock, capital, target_vol, window=20, trade_cost=.0015):
+    """Stock exposure = target volatility / trailing realized volatility, capped at 100%, rest in cash.
+
+    Exposure uses the previous session's volatility estimate and starts in cash until the window fills.
+    trade_cost is fee plus slippage per unit of exposure traded; cash earns zero.
+    """
+    if capital <= 0 or target_vol <= 0:
+        raise ValueError('Capital and target volatility must be positive')
+    returns = full_stock.pct_change().fillna(0)
+    realized = returns.rolling(window).std() * np.sqrt(252)
+    weight = (target_vol / realized).clip(upper=1).shift(1).fillna(0)
+    net = weight * returns - weight.diff().abs().fillna(weight.abs()) * trade_cost
+    return capital * (1 + net).cumprod()
 
 
 def criteria_table(curves, capital, minimum_return, maximum_drawdown):

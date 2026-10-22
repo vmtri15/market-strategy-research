@@ -13,11 +13,12 @@ def render():
         orders=pd.read_sql('SELECT * FROM orders ORDER BY id DESC',c)
         observed=pd.read_sql('SELECT * FROM observed_bars ORDER BY date',c,parse_dates=['date'])
         events=pd.read_sql('SELECT * FROM events ORDER BY rowid DESC LIMIT 50',c)
-    st.info(('Paused' if account['paused'] else 'Enabled')+f" · Last processed session: {account['last_date'] or 'None'}")
+    st.badge('Paused' if account['paused'] else 'Enabled',color='orange' if account['paused'] else 'green',icon='⏸️' if account['paused'] else '✅')
+    st.caption(f"Last processed session: {account['last_date'] or 'None'}")
     a,b=st.columns(2)
     if a.button('Resume paper account' if account['paused'] else 'Pause and cancel pending orders'):
         set_paused(not account['paused']);st.rerun()
-    if b.button('Process latest completed session',disabled=bool(account['paused'])):
+    if b.button('Process latest completed session',disabled=bool(account['paused']),type='primary'):
         try:
             result=run_daily()
             st.session_state['paper_status']=result
@@ -44,16 +45,16 @@ def render():
                 marks=eligible.set_index('date')['close'].reindex(curve.index).ffill()
                 sleeve=(shares*marks).fillna(account['initial']/len(positions))
                 curve['Buy and hold']+=sleeve-account['initial']/len(positions)
-        st.line_chart(curve.rename(columns={'equity':'Paper strategy'}))
+        st.line_chart(curve.rename(columns={'equity':'Paper strategy'}),color=['#0d9488','#64748b'],y_label='Account value ($)')
         st.caption('Benchmark starts at the first recorded opening after inception, with equal initial stock allocation and the same entry costs. Both paths mark positions at the close.')
     holdings,queue,log=st.tabs(['Holdings','Orders','Processing log'])
     with holdings:
-        st.dataframe(positions,hide_index=True)
+        st.dataframe(positions,hide_index=True,width='stretch')
     with queue:
-        st.dataframe(orders,hide_index=True)
+        st.dataframe(orders,hide_index=True,width='stretch')
         st.download_button('Download paper orders',orders.to_csv(index=False),'paper_orders.csv')
     with log:
-        st.dataframe(events,hide_index=True)
+        st.dataframe(events,hide_index=True,width='stretch')
     with st.expander('Execution rules and limitations'):
         st.write('Starts with $10,000 virtual cash. New purchases are limited to 30% of opening account equity per security and available cash. Positions may drift above this limit; there is no forced rebalance. No shorts or leverage. Fees: 0.10%; slippage: 0.05% per side.')
         st.write('Run at least one hour after market close. Prior-session signals fill at the next open, recorded retrospectively after the session closes. No intraday execution. A missed session cancels pending orders and pauses processing; review and resume to continue without inventing missed fills.')

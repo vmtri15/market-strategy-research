@@ -1,3 +1,4 @@
+# `make all` needs network access (yfinance).
 install:
 	pip install -r requirements.txt
 
@@ -18,6 +19,9 @@ app:
 
 research:
 	python -m src.models.research
+
+# Full rebuild: download prices, features, model, research, report.
+all: run-data run-features train research report
 
 test:
 	python -m unittest discover -s tests -v
