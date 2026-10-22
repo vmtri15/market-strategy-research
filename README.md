@@ -64,12 +64,9 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Rebuild the historical research artifacts
-make run-features
-make train
-make research
-
-# Or rebuild everything, including a fresh yfinance download
+# Download prices, build features, train, run the research, write the report.
+# Prices, models and research databases are generated, not stored in git, so run this first.
+# Needs network access; results shift as new prices arrive.
 make all
 
 # Start the dashboard
