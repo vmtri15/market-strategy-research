@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import pandas as pd
-from src.models.research import annual_splits, evaluate, save_run, list_runs
+from src.models.research import annual_splits, evaluate, save_run, list_runs, clear_generated_runs
 
 
 class ResearchTests(unittest.TestCase):
@@ -20,6 +20,15 @@ class ResearchTests(unittest.TestCase):
             self.assertFalse(seen.intersection(test.Date))
             seen.update(test.Date)
         self.assertEqual(len(seen), 1095)
+
+    def test_clearing_generated_runs_keeps_custom_runs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            db = Path(folder) / 'research.db'
+            save_run(self.sample(), scope='custom', db=db)
+            save_run(self.sample(), scope='later_period_default', db=db)
+            save_run(self.sample(), scope='annual_default_2021', db=db)
+            clear_generated_runs(db)
+            self.assertEqual(list_runs(db).scope.tolist(), ['custom'])
 
     def test_confidence_filters_trades(self):
         curve, stats = evaluate(self.sample(), confidence=.7)

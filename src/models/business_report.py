@@ -57,7 +57,7 @@ These results use the fixed default annual walk-forward models, not the original
 Annualized return difference: **{gap:+.1f} percentage points**. Drawdown reduction: **{reduction:+.1f} percentage points** (positive means a smaller peak-to-trough decline). Ending-value difference: **${strategy_end - benchmark_end:+,.0f}** on the same starting capital.
 
 ## Consistency across periods
-The default strategy exceeded benchmark total return in **{wins} of {len(annual)} annual periods** and had a smaller maximum drawdown in **{smaller} of {len(annual)} periods**. Each annual comparison starts with fresh capital; 2025 is partial. These observations are descriptive, not a statistical significance test.
+The default strategy exceeded benchmark total return in **{wins} of {len(annual)} annual periods** and had a smaller maximum drawdown in **{smaller} of {len(annual)} periods**. Each annual comparison starts with fresh capital; the latest period is partial. These observations are descriptive, not a statistical significance test.
 
 ## Sensitivity analysis
 **{len(dev):,} development scenarios** vary confidence thresholds, transaction fees, and slippage on 2021–2023 predictions. Returns are summarized within each confidence threshold across the cost assumptions. The ranges are sensitivity ranges, not confidence intervals or probabilities. No winning configuration is selected for the later-period comparison.
@@ -72,7 +72,7 @@ Define an acceptable return sacrifice for a smaller drawdown before evaluating a
 - Both sides include {base.fee:.2%} transaction fees and {base.slippage:.2%} slippage per order. The benchmark pays entry costs; open positions are marked to close, without forced exit fees.
 - Fractional shares, no taxes, no interest on cash, and no market-impact model. Original saved price-adjustment provenance is unverified.
 - Later-period data was already inspected during development; it is not a pristine final test. Scenario runs reuse historical predictions and are not independent experiments.
-- Source: SQLite research.db, fixed run {base.run_id}. Saved data ends in October 2025; this is a historical report.
+- Source: SQLite research.db, fixed run {base.run_id}. Saved data ends {base.end}; this is a historical report.
 '''
     return text, yearly, sensitivity, base
 
