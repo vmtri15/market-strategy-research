@@ -37,6 +37,9 @@ footer, #MainMenu {visibility:hidden;}
 st.sidebar.markdown('## MARKET LAB')
 st.sidebar.caption('Strategy research workspace')
 ICONS = {'Overview':'🏠','Stock explorer':'🔎','Scenario lab':'🧪','Saved comparisons':'🗂️','Paper trading':'📝'}
+# Model files are not in git, so hosted copies (e.g. Streamlit Cloud) hide the paper account visitors could otherwise change.
+if not (ROOT / 'models/model.pkl').exists():
+    del ICONS['Paper trading']
 page = st.sidebar.radio('Explore', list(ICONS), format_func=lambda name: f'{ICONS[name]}  {name}')
 st.sidebar.divider()
 @st.cache_data
