@@ -54,7 +54,7 @@ if page == 'Paper trading':
     render()
     st.stop()
 if not PREDICTIONS.exists():
-    st.warning('No research data yet. Run `make research` in the project folder, then refresh this page.')
+    st.warning('No research data yet. Run `make all` in the project folder (needs internet, takes a few minutes), then refresh this page.')
     st.stop()
 predictions = pd.read_csv(PREDICTIONS, parse_dates=['Date'])
 runs = list_runs()
@@ -62,7 +62,7 @@ for metric_key in ['annualized_volatility','sortino_ratio','positive_day_rate','
     if metric_key not in runs.columns:
         runs[metric_key] = float('nan')
 if runs.empty:
-    st.warning('No saved research runs. Run `make research` first, or save one from the Scenario lab.')
+    st.warning('No saved research runs. Run `make all` first, or save one from the Scenario lab.')
     st.stop()
 
 if page == 'Overview':
